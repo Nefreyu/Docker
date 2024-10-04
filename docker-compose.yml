@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  php-apache:
+    build: .
+    container_name: apache
+    volumes:
+      - ./www:/var/www/html
+      - ./certs:/etc/apache2/ssl
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - symfony-network
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+  db:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: symfony
+      MYSQL_USER: symfony
+      MYSQL_PASSWORD: symfonypassword
+    volumes:
+      - ./db_data:/var/lib/mysql
+    networks:
+      - symfony-network
+
+  phpmyadmin:
+    build:
+      context: .
+      dockerfile: dockerfile.phpmyadmin  # Apunta al Dockerfile personalizado
+    container_name: phpmyadmin
+    volumes:
+      - ./certs:/etc/apache2/ssl  # Montar los certificados en phpMyAdmin
+    ports:
+      - "8081:80"
+      - "8444:443"
+    depends_on:
+      - db
+    networks:
+      - symfony-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - symfony-network
+
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    ports:
+      - "11211:11211"
+    networks:
+      - symfony-network
+
+volumes:
+  db_data:
+
+networks:
+  symfony-network:

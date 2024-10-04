@@ -1,0 +1,14 @@
+
+FROM phpmyadmin/phpmyadmin:latest
+
+# Instalar openssl y habilitar mod_ssl para Apache
+RUN apt-get update && apt-get install -y openssl
+
+# Habilitar SSL en Apache
+RUN a2enmod ssl
+
+# Copiar el archivo de configuración SSL para Apache
+COPY apache-config-phpmyadmin.conf /etc/apache2/sites-available/000-default.conf
+
+# Exponer los puertos para HTTP y HTTPS
+EXPOSE 80 443
